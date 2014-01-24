@@ -166,7 +166,8 @@ public class MainAppController {
     }
     
     private void generateCss( double x1, double y1, double x2, double y2 ) {
-        if( x2 >= imageView.getImage().getWidth() || y2 >= imageView.getImage().getHeight() ) {
+        if( x2 < 0 || x2 >= imageView.getImage().getWidth() ||
+            y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
             return ;
         }
         List<Integer> colors = getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ;
