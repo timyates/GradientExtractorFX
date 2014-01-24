@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox stylesheets="MainApp.css" fx:id="rootPane" prefHeight="600" prefWidth="800" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bloidonia.fxtools.gradient.MainAppController">
+    <children>
+        <ToolBar>
+            <items>
+                <Button mnemonicParsing="false" onAction="#handleButtonAction" text="Load Image" />
+            </items>
+        </ToolBar>
+        <SplitPane dividerPositions="0.5" focusTraversable="true" VBox.vgrow="ALWAYS">
+            <items>
+                
+                <ScrollPane>
+                    <content>
+                        <StackPane>
+                            <children>
+                                <ImageView fx:id="imageView" onMouseDragged="#handleDragAction" onMousePressed="#handlePressedAction" onMouseReleased="#handleReleasedAction" pickOnBounds="true" preserveRatio="true" />
+                                <Canvas fx:id="canvas" mouseTransparent="true" />
+                            </children>
+                        </StackPane>
+                    </content>
+                </ScrollPane>
+                <VBox>
+                    <children>
+                        <TextArea id="cssOutput" fx:id="cssOutput" VBox.vgrow="ALWAYS" />
+                        <Pane fx:id="previewPane" prefHeight="48.0" VBox.vgrow="NEVER" />
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+    </children>
+</VBox>

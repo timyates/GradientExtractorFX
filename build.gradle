@@ -1,0 +1,5 @@
+apply from: "http://dl.bintray.com/content/shemnon/javafx-gradle/0.4.0/javafx.plugin"
+
+javafx {
+    mainClass = 'com.bloidonia.fxtools.gradient.GradientExtractor'
+}
