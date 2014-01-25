@@ -54,6 +54,8 @@ public class MainAppController {
     GraphicsContext gc = null ;
     private double startX;
     private double startY;
+    private static final String FOUR_SPACES = "    " ;
+    private static final String TWENTYONE_SPACES = "                     " ;
     
     @FXML
     private void handleButtonAction( ActionEvent event ) {
@@ -96,18 +98,9 @@ public class MainAppController {
         gc.strokeLine( startX, startY, x, y ) ;
     } 
     
-    // Convert a JavaFX Color to an rgb int
-    private static int toRGB( Color c ) {
-        return ( ( (int)( c.getRed() * 255 ) & 0xFF ) << 16 ) |
-               ( ( (int)( c.getGreen() * 255 ) & 0xFF ) << 8  ) |
-               ( ( (int)( c.getBlue() * 255 ) & 0xFF ) ) ;
-    }
-
     // Breshenham integer line drawing to get the pixels between two points
     // This needs improving to deal with sub-pixels    
-    private List<Integer> getIntGraph( int x1, int y1, int x2, int y2 ) {
-        if( x2 > imageView.getImage().getWidth() - 1 ) { x2 = (int)imageView.getImage().getWidth() - 1 ; }
-        if( y2 > imageView.getImage().getHeight() - 1 ) { y2 = (int)imageView.getImage().getHeight() - 1 ; }
+    private List<RGB> getIntGraph( int x1, int y1, int x2, int y2 ) {
         int dx = (int)Math.abs( x2 - x1 ) ;
         int sx = x1 < x2 ? 1 : -1 ;
         int dy = (int)Math.abs( y2 - y1 ) ;
@@ -117,10 +110,10 @@ public class MainAppController {
 
         PixelReader pr = imageView.getImage().getPixelReader() ;
         
-        List<Integer> colors = new ArrayList<>() ;
+        List<RGB> colors = new ArrayList<>() ;
         while( true ) {
             Color color = pr.getColor( x1, y1 ) ;
-            int icolor = toRGB( color ) ;
+            RGB icolor = RGB.fromFX( color ) ;
             colors.add( icolor ) ;
             if( x1 == x2 && y1 == y2 ) break ;
             e2 = err ;
@@ -136,24 +129,20 @@ public class MainAppController {
         return colors ;
     }
     
-    private String hexify( int color ) {
-        return String.format( "#%6s", Integer.toHexString( color ) ).replace( ' ', '0' ) ;
-    }
-    
     // Finds the indexes of peaks in the Red, Green or Blue channel
-    private List<Integer> findPeaks( List<Integer> colors, int shift ) {
-        Integer previous = null;
-        Integer previousSlope = 0;
+    private List<Integer> findPeaks( int[] colors ) {
+        int previous = 0 ;
+        int previousSlope = 0;
 
         List<Integer> ret = new ArrayList<>() ;
 
-        for( int i = 0 ; i < colors.size() ; i++ ) {
-            if( previous == null ) {
-                previous = ( colors.get( i ) >> shift ) & 0xFF ;
+        for( int i = 0 ; i < colors.length ; i++ ) {
+            if( i == 0 ) {
+                previous = colors[ i ] ;
                 continue ;
             }
-            Integer p = ( colors.get( i ) >> shift ) & 0xFF ;
-            Integer slope = p - previous ;
+            int p = colors[ i ] ;
+            int slope = p - previous ;
             if( slope * previousSlope < 0 ) {
                 ret.add( i ) ;
             }
@@ -168,22 +157,24 @@ public class MainAppController {
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
             return ;
         }
-        List<Integer> colors = getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ;
+        List<RGB> colors = getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ;
+
+        Set<Integer> peaks = new TreeSet<>() ;
 
         // Red peak indexes
-        Set<Integer> peaks = new TreeSet<>( findPeaks( colors, 16 ) ) ;
+        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getR ).toArray() ) ) ;
         // Green peak indexes
-        peaks.addAll( findPeaks( colors, 8 ) ) ;
+        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getG ).toArray() ) ) ;
         // Blue peak indexes
-        peaks.addAll( findPeaks( colors, 0 ) ) ;
+        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getB ).toArray() ) ) ;
 
         StringBuilder css = new StringBuilder().append( "-fx-background-color:\n" ) ;
-        css.append( String.format( "    linear-gradient( to right,\n" ) )
-           .append( String.format( "                     %s 0%%,\n", hexify( colors.get( 0 ) ) ) ) ;
+        css.append( String.format( "%slinear-gradient( to right,\n", FOUR_SPACES ) )
+           .append( String.format( "%s#%s 0%%,\n", TWENTYONE_SPACES, colors.get( 0 ).toString() ) ) ;
         peaks.stream().forEach( ( pos ) -> {
-            css.append( String.format( "                     %s %.2f%%,\n", hexify( colors.get( pos ) ), ( (double)pos / colors.size() ) * 100.0d ) ) ;
+            css.append( String.format( "%s#%s %.2f%%,\n", TWENTYONE_SPACES, colors.get( pos ).toString(), ( (double)pos / colors.size() ) * 100.0d ) ) ;
         } );
-        css.append( String.format( "                     %s 100%% )", hexify( colors.get( colors.size() - 1 ) ) ) ) ;
+        css.append( String.format( "%s#%s 100%% )", TWENTYONE_SPACES, colors.get( colors.size() - 1 ).toString() ) ) ;
 
         cssOutput.setText( css.toString() ) ;
         previewPane.setStyle( css.toString() );
