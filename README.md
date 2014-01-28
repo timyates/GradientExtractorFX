@@ -12,6 +12,7 @@ Then, click `Load Image`, and drag a line across it to generate a JavaFX css lin
 
 - Sometimes gets the colors wrong (get color abberation esp on diagonal drag lines)
 - Sometimes misses peaks, so color steps are missing
+- Just discovered you can only have 12 stops in a linear gradient without throwing an exception (but it seems to keep working)... Needs investigating
 
 ### TODO
 
