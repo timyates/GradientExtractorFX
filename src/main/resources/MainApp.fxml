@@ -38,9 +38,9 @@
                 <VBox>
                     <children>
                         <Label text="CSS Output" />
-                        <TextArea id="cssOutput" fx:id="cssOutput" VBox.vgrow="ALWAYS" />
+                        <TextArea styleClass="output" fx:id="cssOutput" VBox.vgrow="ALWAYS" />
                         <Label text="Code Output" />
-                        <TextArea id="codeOutput" fx:id="codeOutput" VBox.vgrow="ALWAYS" />
+                        <TextArea styleClass="output" fx:id="codeOutput" VBox.vgrow="ALWAYS" />
                     </children>
                 </VBox>
             </items>

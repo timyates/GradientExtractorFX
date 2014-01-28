@@ -1,6 +1,6 @@
 Label {
     -fx-translate-x: 10 ;
 }
-#cssOutput {
+.output {
 	-fx-font-family: monospace ;
 }

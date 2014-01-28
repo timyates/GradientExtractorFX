@@ -48,6 +48,7 @@ public class MainAppController {
     @FXML private Canvas canvas ;
     @FXML private Pane previewPane ;
     @FXML private TextArea cssOutput ;
+    @FXML private TextArea codeOutput ;
     @FXML private PixelPane pixels ;
     
     GraphicsContext gc = null ;
@@ -183,6 +184,21 @@ public class MainAppController {
                                      colors.get( colors.size() - 1 ).toString() ) ) ;
     }
 
+    private String buildCode( List<RGB> colors, List<Integer> peaks ) {
+        return peaks.stream()
+             .map( (pos) ->
+                 String.format( "    new Stop(%.3f, Color.web(\"#%s\") ),\n",
+                                ( (double)pos / colors.size() ),
+                                colors.get( pos ).toString() ) )
+             .reduce( String.format( "Stop[] stops = new Stop[] {\n",
+                                     FOUR_SPACES ),
+                      (a, b) -> a.concat( b ) )
+             .concat( String.format( "    new Stop(1, Color.web(\"#%s\") )\n )",
+                                     colors.get( colors.size() - 1 ).toString() ) )
+             .concat( "} ;\n" )
+             .concat( "LinearGradient g = new LinearGradient( 0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops ) ;" ) ;
+    }
+
     private void generateCss( double x1, double y1, double x2, double y2 ) {
         if( x2 < 0 || x2 >= imageView.getImage().getWidth() ||
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
@@ -196,7 +212,9 @@ public class MainAppController {
         if( peaks.size() > 0 ) {
             String css = buildCss(colors, peaks ) ;
             cssOutput.setText( css ) ;
-            previewPane.setStyle( css );
+            codeOutput.setText( buildCode( colors, peaks ) ) ;
+            previewPane.setStyle( css ) ;
+            cssOutput.requestFocus() ;
         }
         else {
             cssOutput.setText( "" ) ;
