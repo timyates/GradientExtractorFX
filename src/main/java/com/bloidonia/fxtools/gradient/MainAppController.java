@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.embed.swing.SwingFXUtils;
@@ -50,6 +48,7 @@ public class MainAppController {
     @FXML private Canvas canvas ;
     @FXML private Pane previewPane ;
     @FXML private TextArea cssOutput ;
+    @FXML private PixelPane pixels ;
     
     GraphicsContext gc = null ;
     private double startX;
@@ -129,21 +128,38 @@ public class MainAppController {
         return colors ;
     }
     
-    // Finds the indexes of peaks in the Red, Green or Blue channel
-    private List<Integer> findPeaks( int[] colors ) {
-        int previous = 0 ;
-        int previousSlope = 0;
+    private List<Integer> findPeaks( List<RGB> colors ) {
+        RGB previous = null ;
+        RGB previousSlope = new RGB( 0, 0, 0 ) ;
 
         List<Integer> ret = new ArrayList<>() ;
-
-        for( int i = 0 ; i < colors.length ; i++ ) {
-            if( i == 0 ) {
-                previous = colors[ i ] ;
+        boolean scanning = false ;
+        for( int i = 0 ; i < colors.size() ; i++ ) {
+            if( previous == null ) {
+                previous = colors.get( i ) ;
+                ret.add( i ) ;
                 continue ;
             }
-            int p = colors[ i ] ;
-            int slope = p - previous ;
-            if( slope * previousSlope < 0 ) {
+            RGB p = colors.get( i ) ;
+            if( p.equals( previous ) && scanning ) {
+                continue ;
+            }
+            else if( p.equals( previous ) && !scanning ) {
+                ret.add( i - 1 ) ;
+                scanning = true ;
+                continue ;
+            }
+            else if( scanning ) {
+                ret.add( i - 1 ) ;
+                previous = p ;
+                continue ;
+            }
+            RGB slope = new RGB( p.getR() - previous.getR(),
+                                 p.getG() - previous.getG(),
+                                 p.getB() - previous.getB() ) ;
+            if( slope.getR() * previousSlope.getR() < 0 ||
+                slope.getG() * previousSlope.getG() < 0 ||
+                slope.getB() * previousSlope.getB() < 0 ) {
                 ret.add( i ) ;
             }
             previousSlope = slope ;
@@ -151,33 +167,32 @@ public class MainAppController {
         }
         return ret ;
     }
-    
+
     private void generateCss( double x1, double y1, double x2, double y2 ) {
         if( x2 < 0 || x2 >= imageView.getImage().getWidth() ||
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
             return ;
         }
         List<RGB> colors = getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ;
+        pixels.update( colors ) ;
+        
+        List<Integer> peaks = findPeaks( colors ) ;
+        
+        if( peaks.size() > 0 ) {
+            StringBuilder css = new StringBuilder().append( "-fx-background-color:\n" ) ;
+            css.append( String.format( "%slinear-gradient( to right,\n", FOUR_SPACES ) ) ;
+            peaks.stream().forEach( ( pos ) -> {
+                css.append( String.format( "%s#%s %.2f%%,\n", TWENTYONE_SPACES, colors.get( pos ).toString(), ( (double)pos / colors.size() ) * 100.0d ) ) ;
+            } );
+            css.append( String.format( "%s#%s 100%% )", TWENTYONE_SPACES, colors.get( colors.size() - 1 ).toString() ) ) ;
 
-        Set<Integer> peaks = new TreeSet<>() ;
-
-        // Red peak indexes
-        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getR ).toArray() ) ) ;
-        // Green peak indexes
-        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getG ).toArray() ) ) ;
-        // Blue peak indexes
-        peaks.addAll( findPeaks( colors.stream().mapToInt( RGB::getB ).toArray() ) ) ;
-
-        StringBuilder css = new StringBuilder().append( "-fx-background-color:\n" ) ;
-        css.append( String.format( "%slinear-gradient( to right,\n", FOUR_SPACES ) )
-           .append( String.format( "%s#%s 0%%,\n", TWENTYONE_SPACES, colors.get( 0 ).toString() ) ) ;
-        peaks.stream().forEach( ( pos ) -> {
-            css.append( String.format( "%s#%s %.2f%%,\n", TWENTYONE_SPACES, colors.get( pos ).toString(), ( (double)pos / colors.size() ) * 100.0d ) ) ;
-        } );
-        css.append( String.format( "%s#%s 100%% )", TWENTYONE_SPACES, colors.get( colors.size() - 1 ).toString() ) ) ;
-
-        cssOutput.setText( css.toString() ) ;
-        previewPane.setStyle( css.toString() );
+            cssOutput.setText( css.toString() ) ;
+            previewPane.setStyle( css.toString() );
+        }
+        else {
+            cssOutput.setText( "" ) ;
+            previewPane.setStyle( "" );
+        }
     }
     
     @FXML private void handlePressedAction( MouseEvent event ) {

@@ -26,11 +26,12 @@ public class RGB {
     }
 
     public int getColor() {
-        return ( ( r << 16 ) & 0xFF0000 ) |
+        return 0xFF000000 |
+               ( ( r << 16 ) & 0xFF0000 ) |
                ( ( g << 8  ) & 0xFF00 ) |
                ( ( b       ) & 0xFF ) ;
     }
-    
+
     public int getR() {
         return r ;
     }
@@ -48,13 +49,39 @@ public class RGB {
                         (int)( color.getGreen() * 255 ) & 0xFF,
                         (int)( color.getBlue() * 255 ) & 0xFF ) ;
     }
-    
+
     @Override
     public String toString() {
         return String.format( "%02x%02x%02x", r, g, b ) ;
     }
-    
-    public static void main(String[] args) {
-        System.out.println( new RGB( 128, 32, 16 ).toString() ) ;
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 31 * hash + this.r;
+        hash = 31 * hash + this.g;
+        hash = 31 * hash + this.b;
+        return hash;
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final RGB other = (RGB)obj;
+        if( this.r != other.r ) {
+            return false;
+        }
+        if( this.g != other.g ) {
+            return false;
+        }
+        if( this.b != other.b ) {
+            return false;
+        }
+        return true;
     }
 }
