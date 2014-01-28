@@ -8,6 +8,10 @@ Run with:
 
 Then, click `Load Image`, and drag a line across it to generate a JavaFX css linear gradient
 
+### Current Screenshot
+
+![](https://raw2.github.com/timyates/GradientExtractorFX/master/screenshot.png)
+
 ### Known Issues
 
 - Sometimes gets the colors wrong (get color abberation esp on diagonal drag lines)
