@@ -168,6 +168,21 @@ public class MainAppController {
         return ret ;
     }
 
+    private String buildCss( List<RGB> colors, List<Integer> peaks ) {
+        return peaks.stream()
+             .map( (pos) ->
+                 String.format( "%s#%s %.2f%%,\n",
+                                TWENTYONE_SPACES,
+                                colors.get( pos ).toString(),
+                                ( (double)pos / colors.size() ) * 100.0d ) )
+             .reduce( String.format( "-fx-background-color:\n%slinear-gradient( to right,\n",
+                                     FOUR_SPACES ),
+                      (a, b) -> a.concat( b ) )
+             .concat( String.format( "%s#%s 100%% )",
+                                     TWENTYONE_SPACES,
+                                     colors.get( colors.size() - 1 ).toString() ) ) ;
+    }
+
     private void generateCss( double x1, double y1, double x2, double y2 ) {
         if( x2 < 0 || x2 >= imageView.getImage().getWidth() ||
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
@@ -179,15 +194,9 @@ public class MainAppController {
         List<Integer> peaks = findPeaks( colors ) ;
         
         if( peaks.size() > 0 ) {
-            StringBuilder css = new StringBuilder().append( "-fx-background-color:\n" ) ;
-            css.append( String.format( "%slinear-gradient( to right,\n", FOUR_SPACES ) ) ;
-            peaks.stream().forEach( ( pos ) -> {
-                css.append( String.format( "%s#%s %.2f%%,\n", TWENTYONE_SPACES, colors.get( pos ).toString(), ( (double)pos / colors.size() ) * 100.0d ) ) ;
-            } );
-            css.append( String.format( "%s#%s 100%% )", TWENTYONE_SPACES, colors.get( colors.size() - 1 ).toString() ) ) ;
-
-            cssOutput.setText( css.toString() ) ;
-            previewPane.setStyle( css.toString() );
+            String css = buildCss(colors, peaks ) ;
+            cssOutput.setText( css ) ;
+            previewPane.setStyle( css );
         }
         else {
             cssOutput.setText( "" ) ;
