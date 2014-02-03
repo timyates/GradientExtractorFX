@@ -30,9 +30,9 @@
                             </content>
                         </ScrollPane>
                         <Label text="Actual Pixels" />
-                        <PixelPane fx:id="pixels" prefHeight="48.0" VBox.vgrow="NEVER" />
+                        <PixelPane fx:id="pixels" prefHeight="24.0" VBox.vgrow="NEVER" />
                         <Label text="CSS Gradient" />
-                        <Pane fx:id="previewPane" prefHeight="48.0" VBox.vgrow="NEVER" />
+                        <Pane fx:id="previewPane" prefHeight="24.0" VBox.vgrow="NEVER" />
                     </children>
                 </VBox>
                 <VBox>
