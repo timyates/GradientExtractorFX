@@ -50,7 +50,8 @@ public class MainAppController {
     @FXML private TextArea cssOutput ;
     @FXML private TextArea codeOutput ;
     @FXML private PixelPane pixels ;
-    
+    @FXML private GraphPane graph ;
+
     GraphicsContext gc = null ;
     private double startX;
     private double startY;
@@ -209,6 +210,8 @@ public class MainAppController {
         
         List<Integer> peaks = findPeaks( colors ) ;
         
+        graph.update( colors, peaks ) ;
+
         if( peaks.size() > 0 ) {
             String css = buildCss(colors, peaks ) ;
             cssOutput.setText( css ) ;

@@ -33,6 +33,8 @@
                         <PixelPane fx:id="pixels" prefHeight="24.0" VBox.vgrow="NEVER" />
                         <Label text="CSS Gradient" />
                         <Pane fx:id="previewPane" prefHeight="24.0" VBox.vgrow="NEVER" />
+                        <Label text="Spectrum" />
+                        <GraphPane fx:id="graph" prefHeight="48.0" VBox.vgrow="NEVER" />
                     </children>
                 </VBox>
                 <VBox>
