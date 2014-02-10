@@ -10,7 +10,7 @@ Then, click `Load Image`, and drag a line across it to generate a JavaFX css lin
 
 ### Current Screenshot
 
-![](https://raw2.github.com/timyates/GradientExtractorFX/master/screenshot.png)
+![](https://raw2.github.com/timyates/GradientExtractorFX/3ba507f93618e102c104a21dcb209c87cbabb95e/screenshot.png)
 
 ### Known Issues
 
