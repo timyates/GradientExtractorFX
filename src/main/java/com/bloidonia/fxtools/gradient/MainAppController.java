@@ -210,7 +210,7 @@ public class MainAppController {
         
         List<Integer> peaks = findPeaks( colors ) ;
         
-        graph.update( colors, peaks ) ;
+        graph.setData( colors, peaks ) ;
 
         if( peaks.size() > 0 ) {
             String css = buildCss(colors, peaks ) ;

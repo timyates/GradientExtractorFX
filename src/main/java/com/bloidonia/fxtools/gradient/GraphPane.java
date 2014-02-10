@@ -18,6 +18,7 @@ package com.bloidonia.fxtools.gradient;
 
 import java.util.List;
 import java.util.function.Function;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
@@ -28,12 +29,16 @@ import javafx.scene.paint.Color;
  * @author Tim Yates
  */
 public class GraphPane extends Pane {
-    private final Canvas view = new Canvas( 200, 48 ) ;
+    private Canvas view = new Canvas( 200, 48 ) ;
+    private List<RGB> pixels;
+    private List<Integer> peaks;
     
     public GraphPane() {
-        view.widthProperty().bind( this.widthProperty() );
-        view.heightProperty().bind( this.widthProperty() ) ;
-        this.getChildren().add( view ) ;
+        this.widthProperty().addListener( (ObservableValue<? extends Number> obs,Number oldW,Number newW) -> {
+            GraphPane.this.getChildren().clear() ;
+            GraphPane.this.getChildren().add( GraphPane.this.view = new Canvas( newW.intValue(), 48 ) ) ;
+            update() ;
+        } ) ;
     }
     
     private void render( GraphicsContext g, double h, double dw, double dh, List<RGB> pixels, Function<RGB,Integer> fn ) {
@@ -48,7 +53,14 @@ public class GraphPane extends Pane {
         g.fill() ;
     }
 
-    protected void update( List<RGB> pixels, List<Integer> peaks ) {
+    public void setData( List<RGB> pixels, List<Integer> peaks ) {
+        this.pixels = pixels ;
+        this.peaks = peaks ;
+        update() ;
+    }
+    
+    protected final void update() {
+        if( pixels == null || peaks == null ) return ;
         GraphicsContext g = view.getGraphicsContext2D() ;
         g.setLineWidth( 1 ) ;
         double h = this.heightProperty().get() ;
