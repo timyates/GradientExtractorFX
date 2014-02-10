@@ -194,7 +194,7 @@ public class MainAppController {
              .reduce( String.format( "Stop[] stops = new Stop[] {\n",
                                      FOUR_SPACES ),
                       (a, b) -> a.concat( b ) )
-             .concat( String.format( "    new Stop(1, Color.web(\"#%s\") )\n )",
+             .concat( String.format( "    new Stop(1, Color.web(\"#%s\") )\n",
                                      colors.get( colors.size() - 1 ).toString() ) )
              .concat( "} ;\n" )
              .concat( "LinearGradient g = new LinearGradient( 0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops ) ;" ) ;
