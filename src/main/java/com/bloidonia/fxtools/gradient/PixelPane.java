@@ -16,7 +16,12 @@
 
 package com.bloidonia.fxtools.gradient;
 
+import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -29,6 +34,7 @@ import javafx.scene.layout.Region;
  */
 public class PixelPane extends Region {
     private final ImageView view = new ImageView() ;
+    private ListProperty<RGB> pixels ;
     
     public PixelPane() {
         view.setPreserveRatio( false ) ;
@@ -41,7 +47,26 @@ public class PixelPane extends Region {
         this.getChildren().add( box ) ;
     }
     
-    protected void update( List<RGB> pixels ) {
+    public List<RGB> getPixels() {
+        return pixels == null ? new ArrayList<>() : pixels.get() ;
+    }
+
+    public void setPixels( List pixels ) {
+        pixelsProperty().set( pixels ) ;
+    }
+
+    public ListProperty pixelsProperty() {
+        if( pixels == null ) {
+            pixels = new SimpleListProperty() ;
+            pixels.addListener( this::updatePixels ) ;
+        }
+        return pixels ;
+    }
+
+     void updatePixels( ObservableValue<? extends ObservableList<RGB>> a,
+                       ObservableList<RGB> b,
+                       ObservableList<RGB> pixels ) {
+         if( pixels.size() < 1 ) return ;
          WritableImage back = new WritableImage( pixels.size(), 1 ) ;
          PixelWriter pw = back.getPixelWriter() ;
          for( int i = 0 ; i < pixels.size() ; i++ ) {

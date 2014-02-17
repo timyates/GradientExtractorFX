@@ -18,13 +18,23 @@ package com.bloidonia.fxtools.gradient;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TextArea;
@@ -42,7 +52,7 @@ import javax.imageio.ImageIO;
  * @author Tim Yates
  */
 
-public class MainAppController {
+public class MainAppController implements Initializable {
     @FXML private VBox rootPane ;
     @FXML private ImageView imageView ;
     @FXML private Canvas canvas ;
@@ -58,6 +68,11 @@ public class MainAppController {
     private static final String FOUR_SPACES = "    " ;
     private static final String TWENTYONE_SPACES = "                     " ;
     
+    private final ObservableList<RGB> pixelList = FXCollections.observableArrayList() ;
+    private final ObservableList<Integer> peakList = FXCollections.observableArrayList() ;
+    private ListProperty<RGB> pixelProperty ;
+    private ListProperty<Integer> peakProperty ;
+
     @FXML
     private void handleButtonAction( ActionEvent event ) {
         final FileChooser fileChooser = new FileChooser();
@@ -77,6 +92,28 @@ public class MainAppController {
         catch( IOException ex ) {
             Logger.getLogger( MainAppController.class.getName() ).log( Level.SEVERE, null, ex );
         }
+    }
+
+    public ObservableList<RGB> getPixels() {
+        return pixelList ;
+    }
+
+    public ListProperty<RGB> pixelsProperty() {
+        if( pixelProperty == null ) {
+            pixelProperty = new SimpleListProperty( pixelList ) ;
+        }
+        return pixelProperty ;
+    }
+
+    public ObservableList<Integer> getPeaks() {
+        return peakList ;
+    }
+
+    public ListProperty<Integer> peaksProperty() {
+        if( peakProperty == null ) {
+            peakProperty = new SimpleListProperty<>( peakList ) ;
+        }
+        return peakProperty ;
     }
 
     private Image loadFXImage( File file ) throws IOException {
@@ -205,24 +242,8 @@ public class MainAppController {
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
             return ;
         }
-        List<RGB> colors = getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ;
-        pixels.update( colors ) ;
-        
-        List<Integer> peaks = findPeaks( colors ) ;
-        
-        graph.setData( colors, peaks ) ;
-
-        if( peaks.size() > 0 ) {
-            String css = buildCss(colors, peaks ) ;
-            cssOutput.setText( css ) ;
-            codeOutput.setText( buildCode( colors, peaks ) ) ;
-            previewPane.setStyle( css ) ;
-            cssOutput.requestFocus() ;
-        }
-        else {
-            cssOutput.setText( "" ) ;
-            previewPane.setStyle( "" );
-        }
+        pixelsProperty().setAll( getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ) ;
+        peakList.setAll( findPeaks( pixelList ) ) ;
     }
     
     @FXML private void handlePressedAction( MouseEvent event ) {
@@ -239,5 +260,26 @@ public class MainAppController {
 
     @FXML private void handleReleasedAction( MouseEvent event ) {
         generateCss( startX, startY, event.getX(), event.getY() ) ;
+    }
+
+    void updateText( ObservableValue<? extends ObservableList<Integer>> a,
+              ObservableList<Integer> b,
+              ObservableList<Integer> peaks ) {
+        if( peakList.size() > 0 ) {
+            String css = buildCss( pixelList, peakList ) ;
+            cssOutput.setText( css ) ;
+            codeOutput.setText( buildCode( pixelList, peakList ) ) ;
+            previewPane.setStyle( css ) ;
+            cssOutput.requestFocus() ;
+        }
+        else {
+            cssOutput.setText( "" ) ;
+            previewPane.setStyle( "" );
+        }
+    }
+
+    @Override
+    public void initialize( URL url, ResourceBundle rb ) {
+        peaksProperty().addListener( this::updateText ) ;
     }
 }

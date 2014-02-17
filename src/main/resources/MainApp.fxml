@@ -42,12 +42,18 @@
             </items>
         </SplitPane>
         <Label text="Actual Pixels" />
-        <PixelPane fx:id="pixels" prefHeight="12.0" VBox.vgrow="NEVER" />
+        <PixelPane fx:id="pixels"
+                   pixels="${controller.pixels}"
+                   prefHeight="12.0"
+                   VBox.vgrow="NEVER" />
         <Label text="CSS Gradient" />
         <Pane fx:id="previewPane" prefHeight="12.0" VBox.vgrow="NEVER" />
         <Label text="Spectrum" />
         <AnchorPane prefHeight="48.0" VBox.vgrow="NEVER">
-            <GraphPane fx:id="graph" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+            <GraphPane fx:id="graph"
+                       pixels="${controller.pixels}"
+                       peaks="${controller.peaks}"
+                       AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
         </AnchorPane>
     </children>
 </VBox>

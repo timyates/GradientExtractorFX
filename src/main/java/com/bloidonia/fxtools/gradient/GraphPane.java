@@ -16,9 +16,13 @@
 
 package com.bloidonia.fxtools.gradient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
@@ -30,8 +34,8 @@ import javafx.scene.paint.Color;
  */
 public class GraphPane extends Pane {
     private Canvas view = new Canvas( 200, 48 ) ;
-    private List<RGB> pixels;
-    private List<Integer> peaks;
+    private ListProperty<RGB> pixels ;
+    private ListProperty<Integer> peaks ;
     
     public GraphPane() {
         this.widthProperty().addListener( (ObservableValue<? extends Number> obs,Number oldW,Number newW) -> {
@@ -40,7 +44,51 @@ public class GraphPane extends Pane {
             update() ;
         } ) ;
     }
+
+    public List<RGB> getPixels() {
+        return pixels == null ? new ArrayList<>() : pixels.get() ;
+    }
+
+    public void setPixels( List pixels ) {
+        pixelsProperty().set( pixels ) ;
+    }
+
+    public ListProperty pixelsProperty() {
+        if( pixels == null ) {
+            pixels = new SimpleListProperty() ;
+            pixels.addListener( this::updatePixels ) ;
+        }
+        return pixels ;
+    }
+
+    public List<Integer> getPeaks() {
+        return peaks == null ? new ArrayList<>() : peaks.get() ;
+    }
     
+    public void setPeaks( List peaks ) {
+        peaksProperty().set( peaks ) ;
+    }
+
+    public ListProperty peaksProperty() {
+        if( peaks == null ) {
+            peaks = new SimpleListProperty() ;
+            peaks.addListener( this::updatePeaks ) ;
+        }
+        return peaks ;
+    }
+
+    void updatePixels( ObservableValue<? extends ObservableList<RGB>> a,
+                  ObservableList<RGB> b,
+                  ObservableList<RGB> pixels ) {
+        update() ;
+    }
+
+    void updatePeaks( ObservableValue<? extends ObservableList<Integer>> a,
+              ObservableList<Integer> b,
+              ObservableList<Integer> peaks ) {
+        update() ;
+    }
+
     private void render( GraphicsContext g, double h, double dw, double dh, List<RGB> pixels, Function<RGB,Integer> fn ) {
         g.beginPath() ;
         g.moveTo( 0, h );
@@ -53,12 +101,6 @@ public class GraphPane extends Pane {
         g.fill() ;
     }
 
-    public void setData( List<RGB> pixels, List<Integer> peaks ) {
-        this.pixels = pixels ;
-        this.peaks = peaks ;
-        update() ;
-    }
-    
     protected final void update() {
         if( pixels == null || peaks == null ) return ;
         GraphicsContext g = view.getGraphicsContext2D() ;
