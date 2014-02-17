@@ -49,10 +49,6 @@ public class GraphPane extends Pane {
         return pixels == null ? new ArrayList<>() : pixels.get() ;
     }
 
-    public void setPixels( List pixels ) {
-        pixelsProperty().set( pixels ) ;
-    }
-
     public ListProperty pixelsProperty() {
         if( pixels == null ) {
             pixels = new SimpleListProperty() ;
@@ -65,10 +61,6 @@ public class GraphPane extends Pane {
         return peaks == null ? new ArrayList<>() : peaks.get() ;
     }
     
-    public void setPeaks( List peaks ) {
-        peaksProperty().set( peaks ) ;
-    }
-
     public ListProperty peaksProperty() {
         if( peaks == null ) {
             peaks = new SimpleListProperty() ;

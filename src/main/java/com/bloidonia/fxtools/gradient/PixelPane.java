@@ -51,10 +51,6 @@ public class PixelPane extends Region {
         return pixels == null ? new ArrayList<>() : pixels.get() ;
     }
 
-    public void setPixels( List pixels ) {
-        pixelsProperty().set( pixels ) ;
-    }
-
     public ListProperty pixelsProperty() {
         if( pixels == null ) {
             pixels = new SimpleListProperty() ;
