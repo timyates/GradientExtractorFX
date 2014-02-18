@@ -101,7 +101,7 @@ public class GraphPane extends Pane {
         double w = this.widthProperty().get() ;
         g.clearRect( 0, 0, w, h );
         double dh = h / 255.0 ;
-        double dw = w / pixels.size() ;
+        double dw = w / ( pixels.size() - 1 ) ;
         g.setStroke( Color.RED ) ;
         g.setFill( Color.rgb( 255, 0, 0, 0.2 ) ) ;
         render( g, h, dw, dh, pixels, (rgb) -> rgb.getR() ) ;

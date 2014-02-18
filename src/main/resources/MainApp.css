@@ -7,3 +7,9 @@ Label {
 #threshold_label {
     padding-left: 1em ;
 }
+#threshold {
+    -fx-pref-width: 300 ;
+    -fx-show-tick-marks: true ;
+    -fx-major-tick-unit: 32 ;
+    -fx-minor-tick-unit: 4 ;
+}

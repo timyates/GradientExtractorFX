@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -174,15 +175,15 @@ public class MainAppController implements Initializable {
     }
 
     class Location {
-        private final int location ;
+        private final Integer location ;
         private final List<RGB> pixels ;
         
-        public Location( int location, List<RGB> pixels ) {
+        public Location( Integer location, List<RGB> pixels ) {
             this.location = location ;
             this.pixels = pixels ;
         }
         
-        public int getLocation() { return location ; }
+        public Integer getLocation() { return location ; }
         public List<RGB> getPixels() { return pixels ; }
         @Override
         public String toString() { return String.format( "[%d:%s]", location, pixels.toString() ) ; }
@@ -190,23 +191,25 @@ public class MainAppController implements Initializable {
 
     private List<Integer> findPeaks( List<RGB> colors ) {
         final float THRESHOLD = threshold.valueProperty().floatValue() ;
-        return Stream.iterate( 0, i -> i + 1 )
-              .limit( Math.max( colors.size() - 2, 0 ) )
-              .map( i -> new Location( i, colors.stream().skip( i ).limit( 3 ).collect( Collectors.toList() ) ) )
-              .filter( (Location l) -> {
-                  float dr = l.getPixels().get( 0 ).getR() + ( ( l.getPixels().get( 2 ).getR() - l.getPixels().get( 0 ).getR() ) * 0.5f ) ;
-                  float dg = l.getPixels().get( 0 ).getG() + ( ( l.getPixels().get( 2 ).getG() - l.getPixels().get( 0 ).getG() ) * 0.5f ) ;
-                  float db = l.getPixels().get( 0 ).getB() + ( ( l.getPixels().get( 2 ).getB() - l.getPixels().get( 0 ).getB() ) * 0.5f ) ;
-                  return Math.abs( l.getPixels().get( 1 ).getR() - dr ) > THRESHOLD ||
-                         Math.abs( l.getPixels().get( 1 ).getG() - dg ) > THRESHOLD ||
-                         Math.abs( l.getPixels().get( 1 ).getB() - db ) > THRESHOLD ;
-              } )
-              .map( l -> l.getLocation() ) 
-              .collect( Collectors.toList() ) ;
+
+        return Stream.concat( Stream.of( 0 ),
+                                  Stream.iterate( 0, i -> i + 1 )
+                                        .limit( Math.max( colors.size() - 2, 0 ) )
+                                        .map( i -> new Location( i, colors.stream().skip( i ).limit( 3 ).collect( Collectors.toList() ) ) )
+                                        .filter( (Location l) -> {
+                                            float dr = l.getPixels().get( 0 ).getR() + ( ( l.getPixels().get( 2 ).getR() - l.getPixels().get( 0 ).getR() ) * 0.5f ) ;
+                                            float dg = l.getPixels().get( 0 ).getG() + ( ( l.getPixels().get( 2 ).getG() - l.getPixels().get( 0 ).getG() ) * 0.5f ) ;
+                                            float db = l.getPixels().get( 0 ).getB() + ( ( l.getPixels().get( 2 ).getB() - l.getPixels().get( 0 ).getB() ) * 0.5f ) ;
+                                            return Math.abs( l.getPixels().get( 1 ).getR() - dr ) > THRESHOLD ||
+                                                   Math.abs( l.getPixels().get( 1 ).getG() - dg ) > THRESHOLD ||
+                                                   Math.abs( l.getPixels().get( 1 ).getB() - db ) > THRESHOLD ;
+                                        } )
+                                        .map( l -> l.getLocation() ) ).collect( Collectors.toList() ) ;
     }
 
     private String buildCss( List<RGB> colors, List<Integer> peaks ) {
         return peaks.stream()
+             .limit( Math.max( peaks.size() - 1, 1 ) )
              .map( (pos) ->
                  String.format( "%s#%s %.2f%%,\n",
                                 TWENTYONE_SPACES,
