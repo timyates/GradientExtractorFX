@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,6 +37,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -61,10 +63,14 @@ public class MainAppController implements Initializable {
     @FXML private TextArea codeOutput ;
     @FXML private PixelPane pixels ;
     @FXML private GraphPane graph ;
+    @FXML private Slider threshold ;
+    @FXML private Label thresholdValue ;
 
     GraphicsContext gc = null ;
     private double startX;
     private double startY;
+    private double endX;
+    private double endY;
     private static final String FOUR_SPACES = "    " ;
     private static final String TWENTYONE_SPACES = "                     " ;
     
@@ -138,7 +144,7 @@ public class MainAppController implements Initializable {
     
     // Breshenham integer line drawing to get the pixels between two points
     // This needs improving to deal with sub-pixels    
-    private List<RGB> getIntGraph( int x1, int y1, int x2, int y2 ) {
+    private List<RGB> pixelsInLine( int x1, int y1, int x2, int y2 ) {
         int dx = (int)Math.abs( x2 - x1 ) ;
         int sx = x1 < x2 ? 1 : -1 ;
         int dy = (int)Math.abs( y2 - y1 ) ;
@@ -166,45 +172,37 @@ public class MainAppController implements Initializable {
         }
         return colors ;
     }
-    
-    private List<Integer> findPeaks( List<RGB> colors ) {
-        RGB previous = null ;
-        RGB previousSlope = new RGB( 0, 0, 0 ) ;
 
-        List<Integer> ret = new ArrayList<>() ;
-        boolean scanning = false ;
-        for( int i = 0 ; i < colors.size() ; i++ ) {
-            if( previous == null ) {
-                previous = colors.get( i ) ;
-                ret.add( i ) ;
-                continue ;
-            }
-            RGB p = colors.get( i ) ;
-            if( p.equals( previous ) && scanning ) {
-                continue ;
-            }
-            else if( p.equals( previous ) && !scanning ) {
-                ret.add( i - 1 ) ;
-                scanning = true ;
-                continue ;
-            }
-            else if( scanning ) {
-                ret.add( i - 1 ) ;
-                previous = p ;
-                continue ;
-            }
-            RGB slope = new RGB( p.getR() - previous.getR(),
-                                 p.getG() - previous.getG(),
-                                 p.getB() - previous.getB() ) ;
-            if( slope.getR() * previousSlope.getR() < 0 ||
-                slope.getG() * previousSlope.getG() < 0 ||
-                slope.getB() * previousSlope.getB() < 0 ) {
-                ret.add( i ) ;
-            }
-            previousSlope = slope ;
-            previous = p ;
+    class Location {
+        private final int location ;
+        private final List<RGB> pixels ;
+        
+        public Location( int location, List<RGB> pixels ) {
+            this.location = location ;
+            this.pixels = pixels ;
         }
-        return ret ;
+        
+        public int getLocation() { return location ; }
+        public List<RGB> getPixels() { return pixels ; }
+        @Override
+        public String toString() { return String.format( "[%d:%s]", location, pixels.toString() ) ; }
+    }
+
+    private List<Integer> findPeaks( List<RGB> colors ) {
+        final float THRESHOLD = threshold.valueProperty().floatValue() ;
+        return Stream.iterate( 0, i -> i + 1 )
+              .limit( Math.max( colors.size() - 2, 0 ) )
+              .map( i -> new Location( i, colors.stream().skip( i ).limit( 3 ).collect( Collectors.toList() ) ) )
+              .filter( (Location l) -> {
+                  float dr = l.getPixels().get( 0 ).getR() + ( ( l.getPixels().get( 2 ).getR() - l.getPixels().get( 0 ).getR() ) * 0.5f ) ;
+                  float dg = l.getPixels().get( 0 ).getG() + ( ( l.getPixels().get( 2 ).getG() - l.getPixels().get( 0 ).getG() ) * 0.5f ) ;
+                  float db = l.getPixels().get( 0 ).getB() + ( ( l.getPixels().get( 2 ).getB() - l.getPixels().get( 0 ).getB() ) * 0.5f ) ;
+                  return Math.abs( l.getPixels().get( 1 ).getR() - dr ) > THRESHOLD ||
+                         Math.abs( l.getPixels().get( 1 ).getG() - dg ) > THRESHOLD ||
+                         Math.abs( l.getPixels().get( 1 ).getB() - db ) > THRESHOLD ;
+              } )
+              .map( l -> l.getLocation() ) 
+              .collect( Collectors.toList() ) ;
     }
 
     private String buildCss( List<RGB> colors, List<Integer> peaks ) {
@@ -242,7 +240,7 @@ public class MainAppController implements Initializable {
             y2 < 0 || y2 >= imageView.getImage().getHeight() ) {
             return ;
         }
-        pixelsProperty().setAll( getIntGraph( (int)x1, (int)y1, (int)x2, (int)y2 ) ) ;
+        pixelsProperty().setAll( pixelsInLine( (int)x1, (int)y1, (int)x2, (int)y2 ) ) ;
         peakList.setAll( findPeaks( pixelList ) ) ;
     }
     
@@ -254,8 +252,10 @@ public class MainAppController implements Initializable {
 
     @FXML private void handleDragAction( MouseEvent event ) {
         clearCanvas() ;
-        lineTo( event.getX(), event.getY() ) ;
-        generateCss( startX, startY, event.getX(), event.getY() ) ;
+        endX = event.getX() ;
+        endY = event.getY() ;
+        lineTo( endX, endY ) ;
+        generateCss( startX, startY, endX, endY ) ;
     }
 
     @FXML private void handleReleasedAction( MouseEvent event ) {
@@ -281,5 +281,11 @@ public class MainAppController implements Initializable {
     @Override
     public void initialize( URL url, ResourceBundle rb ) {
         peaksProperty().addListener( this::updateText ) ;
+        threshold.valueProperty().addListener( (o, oldV, newV) -> {
+            thresholdValue.setText( String.format( "%1.2f", newV ) ) ;
+            if( startX != 0.0 ) {
+                generateCss( startX, startY, endX, endY ) ;
+            }
+        } );
     }
 }

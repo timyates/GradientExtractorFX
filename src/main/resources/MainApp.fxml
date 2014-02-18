@@ -12,6 +12,9 @@
         <ToolBar>
             <items>
                 <Button mnemonicParsing="false" onAction="#handleButtonAction" text="Load Image" />
+                <Label id="threshold_label" text="Threshold:" /> 
+                <Slider fx:id="threshold" min="0" max="256" value="10.0"/> 
+                <Label fx:id="thresholdValue" text="10.00" /> 
             </items>
         </ToolBar>
         <SplitPane dividerPositions="0.5" focusTraversable="true" VBox.vgrow="ALWAYS">

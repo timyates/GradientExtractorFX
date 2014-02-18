@@ -4,3 +4,6 @@ Label {
 .output {
 	-fx-font-family: monospace ;
 }
+#threshold_label {
+    padding-left: 1em ;
+}
