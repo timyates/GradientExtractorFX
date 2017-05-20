@@ -4,13 +4,13 @@
 
 Run with:
 
-    ./gradlew run
+    ./gradlew run
 
 Then, click `Load Image`, and drag a line across it to generate a JavaFX css linear gradient
 
 ### Current Screenshot
 
-![](https://raw2.github.com/timyates/GradientExtractorFX/28f823d5cf79ac6006c7bc829aaa82a96bf53f7d/screenshot.png)
+![](https://raw.githubusercontent.com/timyates/GradientExtractorFX/28f823d5cf79ac6006c7bc829aaa82a96bf53f7d/screenshot.png)
 
 ### Known Issues
 
